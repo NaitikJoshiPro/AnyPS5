@@ -1,0 +1,44 @@
+name: PR tests on lavapipe
+
+on:
+  push:
+    branches: ['ci/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TARGETS: agc_driver_tests agc_driver_prepared_graphics_tests agc_driver_prepared_unregistered_graphics_tests
+  TESTS: '^(agc_driver|agc_driver_prepared_graphics.*|agc_driver_prepared_unregistered_graphics)$'
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Install toolchain, lavapipe and SDL dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends g++-14 gcc-14 ninja-build ccache mesa-vulkan-drivers libvulkan1 vulkan-tools \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxss-dev libxkbcommon-dev libwayland-dev libegl-dev libgl-dev \
+            libasound2-dev libpulse-dev libudev-dev libdbus-1-dev
+          vulkaninfo --summary | head -40
+          gcc-14 --version | head -1
+      - run: >-
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+          -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14
+          "-DANYPS5_AGC_EXECUTION_TESTS=PreparedGraphics;PreparedUnregisteredGraphics"
+      - run: cmake --build build --parallel 4 --target $TARGETS
+      - run: ctest --test-dir build -N -R "$TESTS"
+      - name: Run the tests on lavapipe
+        env:
+          ANYPS5_REQUIRE_VULKAN: 1
+          VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+        run: ctest --test-dir build --output-on-failure --timeout 120 -R "$TESTS" --output-junit ctest.xml
+      - run: python3 tools/check_skips.py build/ctest.xml
+        if: ${{ !cancelled() }}
