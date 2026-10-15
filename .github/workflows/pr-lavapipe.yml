@@ -13,7 +13,6 @@ env:
   TESTS: '^(agc_driver_queue_zero_idle_wait|agc_driver_store_idle_results)$'
   ANYPS5_REQUIRE_VULKAN: 1
   ANYPS5_NO_SHADER_CACHE: 1
-  VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/lvp_icd.x86_64.json
 
 jobs:
   linux:
@@ -30,7 +29,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends g++-14 gcc-14 ninja-build ccache mesa-vulkan-drivers libvulkan1 vulkan-tools \
             libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxss-dev libxkbcommon-dev libwayland-dev libegl-dev libgl-dev \
             libasound2-dev libpulse-dev libudev-dev libdbus-1-dev
-          vulkaninfo --summary | head -40
+          ls /usr/share/vulkan/icd.d
+          vulkaninfo --summary | sed -n '/Devices:/,$p'
       - run: >-
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
           -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14
