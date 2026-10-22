@@ -21,7 +21,7 @@ jobs:
         with:
           submodules: recursive
           persist-credentials: false
-          fetch-depth: 3
+          fetch-depth: 4
       - name: Install toolchain, lavapipe and SDL dependencies
         run: |
           sudo apt-get update
@@ -48,7 +48,7 @@ jobs:
         env:
           ANYPS5_REQUIRE_VULKAN: 1
         run: |
-          git checkout HEAD~2 -- core/libs/prx/libSceAgcDriver/Execution/include/QueueState.hpp
+          git checkout HEAD~3 -- core/libs/prx/libSceAgcDriver/Execution/include/QueueState.hpp
           sed -i 's/ClearStateContextRegisters()/InitialContextRegisters()/' core/libs/prx/libSceAgcDriver/tests/Pm4.cpp core/libs/prx/libSceAgcDriver/tests/Submit.cpp
           cmake --build build --parallel 4 --target agc_driver_pm4_tests agc_driver_tests
           set +e
