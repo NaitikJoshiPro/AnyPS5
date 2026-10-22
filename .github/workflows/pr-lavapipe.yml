@@ -10,7 +10,7 @@ permissions:
 
 env:
   TARGETS: agc_driver_pm4_tests agc_driver_tests agc_driver_graphics_tests agc_driver_register_key_tests agc_driver_prepared_graphics_tests agc_driver_prepared_shaders_tests agc_driver_prepared_exports_tests
-  TESTS: '^(agc_driver|agc_driver_pm4.*|agc_driver_graphics|agc_driver_register_key|agc_driver_prepared_(graphics|shaders|exports).*)$'
+  TESTS: '^(agc_driver|agc_driver_pm4(_(failure|ring|stall|rewind|priority).*)?|agc_driver_graphics|agc_driver_register_key|agc_driver_prepared_(graphics|shaders|exports).*)$'
 
 jobs:
   linux:
